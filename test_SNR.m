@@ -5,14 +5,19 @@ clear; clc; close all;
 %% -------------------------------------------------
 settings = Settingsforbasis();
 
-strongThreshold = 20.0;
+strongThreshold = 17.5;
 
 %% -------------------------------------------------
 % Load signal
 %% -------------------------------------------------
 
-numMs = 200;  %
-longSignal = makeOneSignal(settings, numMs);
+numMs = 210;  %
+
+%%load I/Q raw data
+longSignal = loadsignalfile(settings);
+
+%generate signal
+% longSignal = makeOneSignal(settings, numMs);
 longSignal = longSignal(:).';
 
 
@@ -61,7 +66,7 @@ Z= abs(corrMapComplex);
 
  xlabel('Code Phase(samples)');
  ylabel('Doppler Bin');
- zlabel('Correlation Amplitude');
+ zlabel('Correlation Value');
 
  title(['3D Acquisition Map(PRN', num2str(PRN),')']);
  view(45,60);
@@ -97,7 +102,7 @@ SNRp = 10*log10(Pds / Pdn);
 
 %% 출력
 
-fprintf('\n--- SNR Result ---\n');
+fprintf('\n---  1ms coherent integration ---\n');
 fprintf('PRN = %d\n', PRN);
 fprintf('Peak Value = %.3f\n', peakVal);
 fprintf('Doppler = %.3f Hz\n', frqBins(peakFreqIdx)-settings.IF);
@@ -106,6 +111,9 @@ fprintf('SNRp = %.3f dB\n', SNRp);
 
 if SNRp >= strongThreshold
     fprintf('→ STRONG SIGNAL\n');
+    [fineDoppler, fineCodePhase] = finesearch(longSignal, PRN, settings, ...
+        frqBins(peakFreqIdx), peakCodeIdx);
+    fineChip = round(fineCodePhase/(samplesPerCode/settings.codeLength));
 else
     fprintf('→ WEAK SIGNAL\n');
     [bestMap, oddMap, evenMap, blockMaps, frqBins] = ...
@@ -120,7 +128,7 @@ else
 
     xlabel('Code Phase(samples)');
     ylabel('Doppler Bin');
-    zlabel('Correlation Amplitude');
+    zlabel('Correlation Value');
 
     title(['After differentially-coherent(PRN', num2str(PRN),')']);
     view(45,60);
@@ -136,8 +144,15 @@ else
     fprintf('Peak Value = %.3f\n', peakValZ2);
     fprintf('Doppler = %.3f Hz\n', frqBins(peakFreqIdxZ2)-settings.IF);
     fprintf('Code Phase = %d\n', round(peakChipIdxZ2));
+
+
+    [fineDoppler, fineCodePhase] = finesearch(longSignal, PRN, settings, ...
+        frqBins(peakFreqIdxZ2), peakCodeIdxZ2);
+    fineChip = round(fineCodePhase/(samplesPerCode/settings.codeLength));
 end
 
-
+fprintf('\n===================== Final value=====================\n');
+fprintf('Final Doppler offset: %.3f Hz\n', fineDoppler - settings.IF);
+fprintf('Final Code Phase %d\n',fineChip );
 
 fprintf('\n===================== test_SNR end =====================\n');

@@ -1,17 +1,4 @@
 function [bestMap, oddAccumMap, evenAccumMap, blockMaps, frqBins] = Differential_coherent(signalIn, PRN, settings)
-% Differential-coherent accumulation using 10 ms coherent blocks
-%
-% INPUT
-%   signalIn   : input signal vector
-%   PRN        : PRN number
-%   settings   : receiver settings struct
-%
-% OUTPUT
-%   bestMap      : selected magnitude map
-%   oddAccumMap  : accumulated odd differential map (complex)
-%   evenAccumMap : accumulated even differential map (complex)
-%   blockMaps    : cell array of coherent maps
-%   frqBins      : Doppler bin vector
 
     cohTimeMs = 10;
     numBlocks = 20;
@@ -59,8 +46,8 @@ function [bestMap, oddAccumMap, evenAccumMap, blockMaps, frqBins] = Differential
         end
     end
 
-    oddMetric  = abs(oddAccumMap).^2;
-    evenMetric = abs(evenAccumMap).^2;
+    oddMetric  = abs(oddAccumMap);
+    evenMetric = abs(evenAccumMap);
 
     oddPeak  = max(oddMetric(:));
     evenPeak = max(evenMetric(:));

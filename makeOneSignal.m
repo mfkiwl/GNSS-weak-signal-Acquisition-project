@@ -1,8 +1,7 @@
 function finsig = makeOneSignal(settings, numMs)
-% 단일 PRN synthetic signal 생성
 
     %% -------------------------------------------------
-    % 원하는 위성 설정 
+    % PRN 선택
     %% -------------------------------------------------
 
     % ===== 1 =====
@@ -11,23 +10,23 @@ function finsig = makeOneSignal(settings, numMs)
     % codePhase = 159;
     % dopplerHz = 4337;
 
-    % =====  2 =====
-    prn = 1;
-    snrDb = -36;
-    codePhase = 245;
-    dopplerHz = -1789;
+    % =====  2 ====
+    % prn = 1;
+    % snrDb = -36;
+    % codePhase = 245;
+    % dopplerHz = -1789;
 
-    % ===== 3 =====
+    % % ===== 3 =====
     % prn = 26;
     % snrDb = -39;
     % codePhase = 1000;
     % dopplerHz = 3754;
 
     % =====  4 =====
-    % prn = 19;
-    % snrDb = -40;
-    % codePhase = 897;
-    % dopplerHz = -2543;
+    prn = 19;
+    snrDb = -40;
+    codePhase = 897;
+    dopplerHz = -2543;
 
     %% -------------------------------------------------
     % 기본 파라미터

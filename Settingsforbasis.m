@@ -1,6 +1,5 @@
 function settings = Settingsforbasis()
 
-
 %   // Processing settings ====================================================
 %   // Number of milliseconds to be processed used 36000 + any transients (see
 %   // below - in Nav parameters) to ensure nav subframes are provided
@@ -12,11 +11,9 @@ function settings = Settingsforbasis()
 %   // based only. 
   settings.skipNumberOfBytes     = 10*16e6;
 
-
 %   // Data type used to store one sample
 %   //settings.dataType           = 'schar';
   settings.dataType           = 'int8';
-
 
 %   // Intermediate, sampling and code frequencies
 %   //settings.IF                 = -4.5000e6;      5[Hz]
@@ -28,6 +25,9 @@ function settings = Settingsforbasis()
   % Define number of chips in a code period
   settings.codeLength         = 1023;
 
+  settings.fileName = 'C:/Users/kge20/GNSS_project/gps_L1_06_07_16.dat';
+  settings.fileType           = 2;
+
 %   // Acquisition settings ===================================================
 %   // Skips acquisition in the script postProcessing.sci if set to 1
   settings.skipAcquisition    = 0;
@@ -37,13 +37,8 @@ function settings = Settingsforbasis()
   % Band around IF to search for satellite signal. Depends on max Doppler
   settings.acqSearchBand      = 20;           % 14[kHz]
   % Threshold for the signal presence decision rule
-  settings.acqThreshold       = 3;
+  % settings.acqThreshold       = 3;
  % Coherent integration time during acquisition (for GPS it can be from 1to 10 ms for current acquisition implementation)
   settings.acqCohIntegration = 10;
   
   settings.samplesPerChip = settings.samplingFreq / settings.codeFreqBasis;
-  % Constants ==============================================================
-
-  settings.c                  = 299792458;    % The speed of light, [m/s]
-  settings.startOffset        = 68.802;       %[ms] Initial sign. travel time
-

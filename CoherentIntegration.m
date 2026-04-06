@@ -1,18 +1,4 @@
 function [corrMapComplex, frqBins] = CoherentIntegration(signalBlock, PRN, settings, cohTimeMs)
-% coherentIntegration.m
-%
-% Perform FFT-based coherent integration for one PRN over one signal block.
-%
-% INPUTS:
-%   signalBlock   : input signal block ( N x 1), length = cohTimeMs block
-%   PRN           : PRN number
-%   settings      : settings structure
-%   cohTimeMs     : coherent integration time in ms (e.g., 1 or 10)
-%
-% OUTPUTS:
-%   corrMapComplex : [numFreqBins x samplesPerCode] complex correlation map
-%   corrMapPower   : [numFreqBins x samplesPerCode] power map = abs(complex).^2
-%   frqBins        : [1 x numFreqBins] frequency bin centers (Hz)
 
     %--------------------------------------------------------------
     % Basic parameters
@@ -34,7 +20,6 @@ function [corrMapComplex, frqBins] = CoherentIntegration(signalBlock, PRN, setti
 
     %--------------------------------------------------------------
     % Doppler bin settings
-    % spacing = 1000 
     %--------------------------------------------------------------
     binStep = 500 ;  % Hz
     numberOfFrqBins = round(settings.acqSearchBand * 1000 / binStep) + 1;
@@ -104,5 +89,5 @@ function [corrMapComplex, frqBins] = CoherentIntegration(signalBlock, PRN, setti
         % Store
         corrMapComplex(frqBinIndex, :) = corrVec;
     end
-    corrMapComplex = abs(corrMapComplex).^2;
+    corrMapComplex = abs(corrMapComplex);
 end
