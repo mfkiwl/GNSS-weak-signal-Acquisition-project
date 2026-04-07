@@ -1,73 +1,114 @@
 %% main_acq_only.m
 % L1 acquisition only test script
-% Purpose:
 %   1) Load L1 settings
-%   2) Read raw I/Q data from file
-%   3) Run L1 acquisition only
-%   4) Plot and display acquisition results
+%   2) Read raw I/Q data from file 
+%   3) Run L1 acquisition only (1ms)
+%      signal discrimination(strong/weak)
+%      differnetly coherent integration(weak)
+%      Fine search (2.5Hz)
+%   7) Plot and display acquisition results
 
-close all;
-clear;
-clc;
-
-format long;
-
-%% Optional: add paths if needed
-% Uncomment and modify only if your functions are in subfolders
-% addpath('include');
-% addpath('geoFunctions');
+close all; clear; clc;
 
 disp('==============================');
-disp('   L1 Acquisition Test   ');
+disp('      L1 Acquisition    ');
 disp('==============================');
 
-%% 1) Load settings
-%% for basic code
+%% 1) settings/ Basic parameters
+% for basic code
 %settings = settingsL1();
 
-%% values based on reference
+% values based on reference
 settings = Settingsforbasis();
 
+samplesPerCode = round(settings.samplingFreq / ...
+    (settings.codeFreqBasis / settings.codeLength));
+
+samples1ms   = samplesPerCode; 
+samples200ms = 200 * samplesPerCode;
+samples10ms = 10* samplesPerCode;
+
+strongThreshold = 17.5;%SNRp
+threshold = 2.2;
 
 %% 2) Read signal from file
-%
+
+numMs = 210;
 
 %%load I/Q raw data
-%longSignal = loadsignalfile(settings);
+% longSignal = loadsignalfile(settings, numMs);
 
 %%use generate signal
-longSignal = generateSyntheticSignal(settings);
+longSignal = makeOneSignal(settings, numMs);
 
-disp(['Loaded signal length: ', num2str(length(longSignal)), ' samples']);
+longSignal = longSignal(:).';
+
+if length(longSignal) < samples200ms
+    error('Input signal is shorter than 200 ms.');
+end
+    
+signal1ms   = longSignal(1:samples1ms);
+signal200ms = longSignal(1:samples200ms);
+signal10ms = longSignal(1: samples10ms);
 
 %% 3) Run acquisition
 disp('Running L1 acquisition...');
-acqResults = Acquisition(longSignal, settings);
+PRN =1;
+% for PRN = settings.acqSatelliteList
+    [corrMapComplex, frqBins] = CoherentIntegration(signal1ms, PRN, settings, 1);
+    Z= abs(corrMapComplex);
+    
+    [SNRp, Pds, Pdn, peakVal, peakFreqIdx, peakCodeIdx] = calcSNRp_fromMap(Z);
+    peakChipIdx = round(peakCodeIdx/(samplesPerCode/settings.codeLength));
 
-%% 4) Plot results
-disp('Plotting acquisition results...');
-plotAcquisition(acqResults);
+    fprintf('\n---  1ms coherent integration ---\n');
+    fprintf('PRN = %d\n', PRN);
+    fprintf('Peak Value = %.3f\n', peakVal);
+    fprintf('Doppler = %.3f Hz\n', frqBins(peakFreqIdx)-settings.IF);
+    fprintf('Code Phase = %d\n', peakChipIdx);
+    fprintf('SNRp = %.3f dB\n', SNRp);
 
-%% 5) Display summary
-disp('Acquisition finished.');
-disp('--- acqResults fields ---');
-disp(acqResults);
+    if SNRp >= strongThreshold
+        fprintf('→ STRONG SIGNAL\n');
+        [fineDoppler, fineCodePhase] = finesearch(longSignal, PRN, settings, ...
+            frqBins(peakFreqIdx), peakCodeIdx);
+        fineChip = round(fineCodePhase/(samplesPerCode/settings.codeLength));
+    
+    else
+        fprintf('→ WEAK SIGNAL\n');
+        [bestMap, oddMap, evenMap, blockMaps, frqBins] = ...
+            Differential_coherent(signal200ms, PRN, settings);
 
-%% 6) Show detected PRNs only
-detectedPRN = find(acqResults.carrFreq ~= 0);
+        figure;
+        Z2= bestMap;
+        surf(Z2);
+        shading interp;
+        colormap jet;
+        colorbar;
+    
+        xlabel('Code Phase(samples)');
+        ylabel('Doppler Bin');
+        zlabel('Correlation Value');
+    
+        title(['After differentially-coherent(PRN', num2str(PRN),')']);
+        view(45,60);
 
-if isempty(detectedPRN)
-    disp('No satellites detected.');
-else
-    disp('Detected satellites:');
-    for k = 1:length(detectedPRN)
-        prn = detectedPRN(k);
-        codePhaseSample = acqResults.codePhase(prn);
-        codePhaseChip = round(codePhaseSample/ settings.samplesPerChip);
-        fprintf('PRN %2d | PeakMetric = %8.4f | CodePhase = %8d | CarrFreq = %12.3f Hz\n', ...
-            prn, ...
-            acqResults.peakMetric(prn), ...
-            codePhaseChip, ...
-            acqResults.carrFreq(prn));
+        [SNRp2, Pds2, Pdn2, peakVal2, peakFreqIdx2, peakCodeIdx2] = calcSNRp_fromMap(Z2);
+        peakChipIdx2 = round(peakCodeIdx2/(samplesPerCode/settings.codeLength));
+
+        fprintf('\n---After block accumulation-----\n')
+        fprintf('PRN = %d\n', PRN);
+        fprintf('Peak Value = %.3f\n', peakVal2);
+        fprintf('Doppler = %.3f Hz\n', frqBins(peakFreqIdx2)-settings.IF);
+        fprintf('Code Phase = %d\n', round(peakChipIdx2));
+
+         [fineDoppler, fineCodePhase] = finesearch(longSignal, PRN, settings, ...
+            frqBins(peakFreqIdx2), peakCodeIdx2);
+        fineChip = round(fineCodePhase/(samplesPerCode/settings.codeLength));
+
+        fprintf('\n===================== Final value=====================\n');
+        fprintf('PRN: ', PRN)
+        fprintf('Final Doppler offset: %.3f Hz\n', fineDoppler - settings.IF);
+        fprintf('Final Code Phase %d\n',fineChip );
     end
-end
+% end 
