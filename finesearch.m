@@ -93,16 +93,16 @@ function [fineDoppler, fineCodePhase] = finesearch(longSignal, PRN, settings, co
     fprintf('Code Phase     : %d samples\n', fineCodePhase);
 
     %% ── 플롯 ─────────────────────────────────────────────────
-    figure;
-    [freq_sorted, sort_idx] = sort(freq_axis);
-    plot(freq_sorted, abs(Z_fft(sort_idx)));
-    hold on;
-    xline(peak_freq, 'r--', sprintf('2\\Deltaf = %+.0f Hz', peak_freq));
-    xline( 500, 'k:'); xline(-500, 'k:', '\\pm500Hz');
-    xlabel('Frequency [Hz]  (2\Deltaf 스케일)');
-    ylabel('|FFT|');
-    title(sprintf('Fine Search PRN%d | coarse=%+.0fHz | \\Deltaf=%+.0fHz | fine=%+.0fHz', ...
-        PRN, coarseDoppler - settings.IF, delta_f, fineDoppler - settings.IF));
-    xlim([-600 600]);
-    grid on;
+    % figure;
+    % [freq_sorted, sort_idx] = sort(freq_axis);
+    % plot(freq_sorted, abs(Z_fft(sort_idx)));
+    % hold on;
+    % xline(peak_freq, 'r--', sprintf('2\\Deltaf = %+.0f Hz', peak_freq));
+    % xline( 500, 'k:'); xline(-500, 'k:', '\\pm500Hz');
+    % xlabel('Frequency [Hz]  (2\Deltaf 스케일)');
+    % ylabel('|FFT|');
+    % title(sprintf('Fine Search PRN%d | coarse=%+.0fHz | \\Deltaf=%+.0fHz | fine=%+.0fHz', ...
+    %     PRN, coarseDoppler - settings.IF, delta_f, fineDoppler - settings.IF));
+    % xlim([-600 600]);
+    % grid on;
 end

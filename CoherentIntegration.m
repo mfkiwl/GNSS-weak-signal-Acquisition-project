@@ -23,7 +23,7 @@ function [corrMapComplex, frqBins] = CoherentIntegration(signalBlock, PRN, setti
     %--------------------------------------------------------------
     binStep = 500 ;  % Hz
     numberOfFrqBins = round(settings.acqSearchBand * 1000 / binStep) + 1;
-
+       %carrier를 wipe-off 해서 찾고 있음 
     frqBins = settings.IF ...
         - (settings.acqSearchBand/2) * 1000 ...
         + binStep * (0:numberOfFrqBins-1);
